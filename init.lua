@@ -88,7 +88,7 @@ require('lazy').setup({
 
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim',       opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
@@ -113,7 +113,7 @@ require('lazy').setup({
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  { 'folke/which-key.nvim',  opts = {} },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -203,6 +203,7 @@ require('lazy').setup({
     end,
   },
 
+
   {
     -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
@@ -258,11 +259,93 @@ require('lazy').setup({
     },
     build = ':TSUpdate',
   },
+  {
+    "ojroques/nvim-bufdel",
+  },
+  {
+    "nvim-treesitter/nvim-treesitter-context",
+    config = function()
+      require("treesitter-context").setup({
+        enable = true,
+      })
+    end,
+  },
+  {
+    "ray-x/lsp_signature.nvim",
+    config = function()
+      require("lsp_signature").setup({
+        floating_window = false
+      })
+    end,
+  },
+  {
+    "zbirenbaum/copilot.lua",
+    enabled = true,
+    cmd = "Copilot",
+    event = "InsertEnter",
+    config = function()
+      require("copilot").setup({
+        filetypes = {
+          ["*"] = true,
+        },
+        suggestion = { enabled = false },
+        panel = { enabled = false },
+      })
+    end,
+  },
+  {
+    "zbirenbaum/copilot-cmp",
+    dependencies = { "zbirenbaum/copilot.lua" },
+    enabled = true,
+    config = function()
+      require("copilot_cmp").setup({
+        method = "getCompletionsCycling",
+      })
+    end,
+  },
+  {
+    "folke/trouble.nvim",
+    -- dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {
+      icons = false,
+      height = 5,
+      fold_open = "v",      -- icon used for open folds
+      fold_closed = ">",    -- icon used for closed folds
+      indent_lines = false, -- add an indent guide below the fold icons
+      mode = "document_diagnostics",
+      signs = {
+        -- icons / text used for a diagnostic
+        error = "error",
+        warning = "warn",
+        hint = "hint",
+        information = "info"
+      },
+      auto_open = true,
+      use_diagnostic_signs = false -- enabling this will use the signs defined in your lsp client
+    },
+  },
+  {
+    "folke/persistence.nvim",
+    event = "BufReadPre",
+    opts = {
+      dir = vim.fn.expand(vim.fn.stdpath "config" .. "/session/"),
+    }
+  },
+  {
+    "nvim-pack/nvim-spectre",
+    event = "BufRead",
+    dependencies = {
+      "nvim-lua/plenary.nvim"
+    },
+    config = function()
+      require("spectre").setup()
+    end,
+  },
 
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
   --       Uncomment any of the lines below to enable them.
-  -- require 'kickstart.plugins.autoformat',
+  require 'kickstart.plugins.autoformat',
   -- require 'kickstart.plugins.debug',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
@@ -431,7 +514,7 @@ vim.defer_fn(function()
     ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
-    auto_install = false,
+    auto_install = true,
     -- Install languages synchronously (only applied to `ensure_installed`)
     sync_install = false,
     -- List of parsers to ignore installing
@@ -641,7 +724,7 @@ cmp.setup {
       behavior = cmp.ConfirmBehavior.Replace,
       select = true,
     },
-    ['<Tab>'] = cmp.mapping(function(fallback)
+    --[[ ['<Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_next_item()
       elseif luasnip.expand_or_locally_jumpable() then
@@ -649,7 +732,7 @@ cmp.setup {
       else
         fallback()
       end
-    end, { 'i', 's' }),
+    end, { 'i', 's' }), ]]
     ['<S-Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_prev_item()
@@ -661,6 +744,7 @@ cmp.setup {
     end, { 'i', 's' }),
   },
   sources = {
+    { name = "copilot" },
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
     { name = 'path' },
@@ -669,3 +753,100 @@ cmp.setup {
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+local function z_map(mode, lhs, rhs, opts)
+  vim.keymap.set(mode, lhs, rhs, opts)
+end
+
+local function z_mapn(modes, lhs, rhs, opts)
+  for _, mode in ipairs(modes) do
+    z_map(mode, lhs, rhs, opts)
+  end
+end
+
+z_map("n", "<F3>", "n", { desc = "Next Search" })
+--z_map("i", "<Tab>", "<nop>")
+
+z_mapn({ "n" }, "<S-Left>", "<ESC>v<Left>", { desc = "Selection Left" })
+z_mapn({ "n" }, "<S-Right>", "<ESC>v<Right>", { desc = "Selection Right" })
+z_mapn({ "n" }, "<S-Up>", "<ESC>v<Up>", { desc = "Selection Up" })
+z_mapn({ "n" }, "<S-Down>", "<ESC>v<Down>", { desc = "Selection Down" })
+z_mapn({ "n" }, "<C-S-Left>", "<ESC>v<Left>", { desc = "Selection Left" })
+z_mapn({ "n" }, "<C-S-Right>", "<ESC>v<Right>", { desc = "Selection Right" })
+z_mapn({ "n" }, "<C-S-Up>", "<ESC>v<Up>", { desc = "Selection Up" })
+z_mapn({ "n" }, "<C-S-Down>", "<ESC>v<Down>", { desc = "Selection Down" })
+
+
+z_mapn({ "i" }, "<S-Left>", "<ESC>v", { desc = "Selection Left" })
+z_mapn({ "i" }, "<S-Right>", "<ESC>v", { desc = "Selection Right" })
+z_mapn({ "i" }, "<S-Up>", "<ESC>v", { desc = "Selection Up" })
+z_mapn({ "i" }, "<S-Down>", "<ESC>v", { desc = "Selection Down" })
+z_mapn({ "i" }, "<C-S-Left>", "<ESC>v", { desc = "Selection Left" })
+z_mapn({ "i" }, "<C-S-Right>", "<ESC>v", { desc = "Selection Right" })
+z_mapn({ "i" }, "<C-S-Up>", "<ESC>v", { desc = "Selection Up" })
+z_mapn({ "i" }, "<C-S-Down>", "<ESC>v", { desc = "Selection Down" })
+
+z_map("v", "i", "<ESC>i", { desc = "Insert Mode" })
+z_map("v", "<C-c>", "ygv", { desc = "Copy" })
+z_map("v", "<C-x>", "ygv<Del>", { desc = "Cut" })
+z_map("v", "<S-Left>", "<Left>", { desc = "Selection Left" })
+z_map("v", "<S-Right>", "<Right>", { desc = "Selection Right" })
+z_map("v", "<S-Up>", "<Up>", { desc = "Selection Up" })
+z_map("v", "<S-Down>", "<Down>", { desc = "Selection Down" })
+
+z_mapn({ "i", "n", "v" }, "<C-q>", function()
+  -- if we are in spectre replace mode, then close it using q
+  -- we do this by checking if the current buffer is a spectre buffer
+  if vim.bo.filetype == "spectre_panel" then
+    vim.cmd("q")
+  else
+    vim.cmd("BufDel")
+  end
+end
+
+, { desc = "Close Window" })
+z_mapn({ "i", "n", "v" }, "<F17>", "<cmd>qa<cr>", { desc = "Close All Windows" })
+z_mapn({ "i", "n", "v" }, "<A-Enter>", function()
+  vim.lsp.buf.code_action()
+end, { desc = "Quick Fix" })
+z_mapn({ "i", "n", "v" }, "<A-Left>", "<cmd>BufferLineCyclePrev<cr>", { desc = "Prev Buffer" })
+z_mapn({ "i", "n", "v" }, "<A-Right>", "<cmd>BufferLineCycleNext<cr>", { desc = "Next Buffer" })
+z_mapn({ "i", "n", "v" }, "<C-a>", "<ESC>ggVG", { desc = "Select all" })
+z_mapn({ "i", "n", "v" }, "<C-s>", "<cmd>w!<cr>", { desc = "Save" })
+z_mapn({ "i", "n", "v" }, "<C-y>", "<cmd>red<cr>", { desc = "Redo" })
+z_mapn({ "i", "n", "v" }, "<C-z>", "<cmd>u<cr>", { desc = "Undo" })
+z_mapn({ "i", "n", "v" }, "<C-f>", "<cmd>Telescope current_buffer_fuzzy_find<cr>", { desc = "Search in current file" })
+z_mapn({ "i", "n", "v" }, "<A-f>", "<cmd>lua require('spectre').open()<cr>", { desc = "Replace in current file" })
+z_mapn({ "i", "n", "v" }, "<F2>", function()
+  vim.lsp.buf.rename()
+end, { desc = "Rename" })
+z_mapn({ "i", "n", "v" }, "<F10>", function()
+  vim.diagnostic.goto_prev()
+end, { desc = "Go to prev error" })
+z_mapn({ "i", "n", "v" }, "<F11>", function()
+  vim.diagnostic.goto_next()
+end, { desc = "Go to next error" })
+z_mapn({ "i", "n", "v" }, "<F12>", function()
+  vim.lsp.buf.definition()
+end, { desc = "Go to definition" })
+z_mapn({ "i", "n", "v" }, "<S-F12>", function()
+  vim.lsp.buf.references()
+end, { desc = "Show usages" })
+z_mapn({ "i", "n", "v" }, "<F13>", function()
+  vim.lsp.buf.hover()
+end, { desc = "Show LSP hover" })
+z_mapn({ "i", "n", "v" }, "<F14>", "<C-W>w", { desc = "Cursor to other split" })
+z_mapn({ "i", "n", "v" }, "<F15>", "<cmd>BufferLineTogglePin<cr>", { desc = "Pin" })
+z_mapn({ "i", "n", "v" }, "<F22>", function()
+  vim.diagnostic.open_float()
+end, { desc = "Show diagnostics" })
+z_mapn({ "i", "n", "v" }, "<F23>", function()
+  require("telescope.builtin").find_files()
+end, { desc = "Search all files" })
+z_mapn({ "i", "n", "v" }, "<F24>", function()
+  require("telescope.builtin").live_grep()
+end, { desc = "Search words in all files" })
+z_mapn({ "n" }, "<leader>rr", [[<cmd>lua require("persistence").load()<cr>]], { desc = "Restore session" })
+
+
+vim.opt.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal"
