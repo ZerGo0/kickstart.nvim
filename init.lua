@@ -189,7 +189,7 @@ require('lazy').setup({
     },
   },
 
-  {
+  --[[{
     -- Theme inspired by Atom
     'navarasu/onedark.nvim',
     priority = 1000,
@@ -201,7 +201,7 @@ require('lazy').setup({
       }
       require('onedark').load()
     end,
-  },
+  }, ]] --
 
 
   {
@@ -339,6 +339,23 @@ require('lazy').setup({
     },
     config = function()
       require("spectre").setup()
+    end,
+  },
+  {
+    "Shatur/neovim-ayu",
+    priority = 1000,
+    lazy = false,
+    config = function()
+      require('ayu').setup({})
+      vim.cmd [[colorscheme ayu]]
+    end,
+  },
+  {
+    'akinsho/bufferline.nvim',
+    version = "*",
+    dependencies = 'nvim-tree/nvim-web-devicons',
+    config = function()
+      require("bufferline").setup {}
     end,
   },
 
@@ -850,3 +867,6 @@ z_mapn({ "n" }, "<leader>rr", [[<cmd>lua require("persistence").load()<cr>]], { 
 
 
 vim.opt.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal"
+
+vim.o.shiftwidth = 2
+vim.o.tabstop = 2
